@@ -1,0 +1,7 @@
+services:
+  - type: cron
+    name: virgin-keyword-listener
+    env: python
+    schedule: "0 7-20 * * 1-5"
+    buildCommand: "apt-get update && apt-get install -y ffmpeg && pip install -r requirements.txt"
+    startCommand: "python main.py"
