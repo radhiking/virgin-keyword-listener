@@ -3,6 +3,7 @@ import re
 import time
 import requests
 import subprocess
+import imageio_ffmpeg
 
 RADIO_URL = os.environ["RADIO_URL"]
 ASSEMBLYAI_API_KEY = os.environ["ASSEMBLYAI_API_KEY"]
