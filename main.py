@@ -9,11 +9,22 @@ ASSEMBLYAI_API_KEY = os.environ["ASSEMBLYAI_API_KEY"]
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0",
+    "Referer": "https://www.virginradio.ca/",
+    "Accept": "*/*"
+}
+
 AUDIO_FILE = "clip.aac"
 RECORD_SECONDS = 300
 
 def get_playlist():
-    r = requests.get(RADIO_URL, timeout=15)
+    r = requests.get(
+        RADIO_URL,
+        headers=HEADERS,
+        timeout=15
+    )
+
     r.raise_for_status()
     return r.text
 
@@ -42,10 +53,17 @@ def record_audio():
                 seen.add(segment_url)
 
                 try:
-                    seg = requests.get(segment_url, timeout=15)
+                    seg = requests.get(
+                        segment_url,
+                        headers=HEADERS,
+                        timeout=15
+                    )
+
                     seg.raise_for_status()
                     out.write(seg.content)
+
                     print(f"Downloaded segment: {segment_url}")
+
                 except Exception as e:
                     print(f"Skipped segment: {e}")
 
@@ -55,7 +73,10 @@ def record_audio():
 
 def upload_to_assemblyai():
     print("Uploading to AssemblyAI...")
-    headers = {"authorization": ASSEMBLYAI_API_KEY}
+
+    headers = {
+        "authorization": ASSEMBLYAI_API_KEY
+    }
 
     with open(AUDIO_FILE, "rb") as f:
         response = requests.post(
@@ -65,19 +86,26 @@ def upload_to_assemblyai():
         )
 
     response.raise_for_status()
+
     return response.json()["upload_url"]
 
 def transcribe(audio_url):
     print("Starting transcription...")
-    headers = {"authorization": ASSEMBLYAI_API_KEY}
+
+    headers = {
+        "authorization": ASSEMBLYAI_API_KEY
+    }
 
     response = requests.post(
         "https://api.assemblyai.com/v2/transcript",
         headers=headers,
-        json={"audio_url": audio_url}
+        json={
+            "audio_url": audio_url
+        }
     )
 
     response.raise_for_status()
+
     transcript_id = response.json()["id"]
 
     while True:
@@ -104,7 +132,12 @@ def find_keyword(text):
     ]
 
     for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
         if match:
             return match.group(1).upper()
 
@@ -112,23 +145,35 @@ def find_keyword(text):
 
 def send_telegram(message):
     print("Sending Telegram message...")
+
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 
-    requests.post(url, json={
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message
-    })
+    requests.post(
+        url,
+        json={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": message
+        }
+    )
 
 def main():
     record_audio()
+
     audio_url = upload_to_assemblyai()
+
     text = transcribe(audio_url)
+
     keyword = find_keyword(text)
 
     if keyword:
-        send_telegram(f"Virgin Radio keyword found: {keyword}\n\nTranscript:\n{text[:1500]}")
+        send_telegram(
+            f"Virgin Radio keyword found: {keyword}\n\nTranscript:\n{text[:1500]}"
+        )
+
     else:
-        send_telegram(f"No clear keyword found.\n\nTranscript:\n{text[:1500]}")
+        send_telegram(
+            f"No clear keyword found.\n\nTranscript:\n{text[:1500]}"
+        )
 
 if __name__ == "__main__":
     main()
