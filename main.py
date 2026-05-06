@@ -10,7 +10,7 @@ ASSEMBLYAI_API_KEY = os.environ["ASSEMBLYAI_API_KEY"]
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-AUDIO_FILE = "clip.mp3"
+AUDIO_FILE = "clip.aac"
 
 def record_audio():
     ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
@@ -20,7 +20,8 @@ def record_audio():
         "-y",
         "-i", RADIO_URL,
         "-t", "300",
-        "-acodec", "libmp3lame",
+        "-vn",
+        "-c:a", "copy",
         AUDIO_FILE
     ], check=True)
 
