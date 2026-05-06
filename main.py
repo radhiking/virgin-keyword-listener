@@ -13,8 +13,10 @@ TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 AUDIO_FILE = "clip.mp3"
 
 def record_audio():
+    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+
     subprocess.run([
-        "ffmpeg",
+        ffmpeg_path,
         "-y",
         "-i", RADIO_URL,
         "-t", "300",
